@@ -16,6 +16,28 @@ let usingApi = false;
 let categoryFocusIndex = -1;
 let openCredentialCardId = null;
 let currentSort = 'none';
+const PRELOADER_KEY = 'fistoPreloaderShown';
+
+function isPreloaderEnabled() {
+  try {
+    return localStorage.getItem(PRELOADER_KEY) !== 'true';
+  } catch {
+    return true;
+  }
+}
+
+function markPreloaderCompleted() {
+  try {
+    localStorage.setItem(PRELOADER_KEY, 'true');
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function hidePageLoader() {
+  const loader = document.getElementById('page-loader');
+  if (loader) loader.classList.add('hidden');
+}
 
 const defaultCards = () => [
     { id: 'demo-1', title: 'Weave Pattern Studio', description: 'Interactive textile pattern visualisation for bulk-order planning.', company: 'Lakshmi Textiles', category: 'Pattern App', image: 'fisto-logo.png', url: '', credentials: [{ role: 'Administrator', username: 'demo@lakshmi.in', password: 'weave123', remarks: 'Full access' }] },
@@ -538,6 +560,11 @@ function setupCardAnimations() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const preloaderFirstRun = isPreloaderEnabled();
+  if (!preloaderFirstRun) {
+    hidePageLoader();
+  }
+
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.setAttribute('data-lenis-prevent', '');
     overlay.addEventListener('click', event => { if (event.target === overlay) closeModal(overlay.id); });
@@ -548,6 +575,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('masterPwInput').addEventListener('keydown', event => { if (event.key === 'Enter') loginMaster(); });
   setupSearch(); setupAutocomplete(); setupSort();
   setupNavbarScroll(); setupMobileMenu(); setupCursorGlow(); setupSmoothScroll();
+
+  if (preloaderFirstRun) {
+    await new Promise(resolve => {
+      if (document.readyState === 'complete') return resolve();
+      window.addEventListener('load', resolve);
+    });
+  }
+
   await loadWorkspace();
   
   const backToTopBtn = document.getElementById('backToTopBtn');
@@ -572,5 +607,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderAll();
   setupHeroAnimations();
   setupCardAnimations();
-  document.getElementById('page-loader')?.classList.add('hidden');
+
+  if (preloaderFirstRun) {
+    markPreloaderCompleted();
+  }
+  hidePageLoader();
 });
