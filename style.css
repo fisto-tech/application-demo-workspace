@@ -145,7 +145,7 @@ body {
     right: 0;
     height: var(--nav-h);
     z-index: 1000;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: space-between;
     padding: 0 28px;
@@ -434,7 +434,7 @@ body {
     padding: calc(var(--nav-h) + 48px) 24px 72px;
     background: var(--white);
     overflow: hidden;
-    margin-top: var(--nav-h);
+    /* margin-top: var(--nav-h); */
     isolation: isolate;
 }
 
@@ -2688,7 +2688,7 @@ body::after {
 #hero {
     min-height: 78vh;
     padding: calc(var(--nav-h) + 86px) 24px 94px;
-    margin-top: calc(var(--nav-h) + 30px);
+    /* margin-top: calc(var(--nav-h) + 30px); */
     background: transparent;
 }
 
@@ -3175,7 +3175,7 @@ footer::before {
         border-radius: 20px;
     }
     #hero {
-        margin-top: calc(var(--nav-h) + 18px);
+        /* margin-top: calc(var(--nav-h) + 18px); */
         min-height: auto;
         padding: calc(var(--nav-h) + 56px) 16px 64px;
     }
@@ -3340,7 +3340,7 @@ body {
 
 .nav-manage-btn-mobile,
 .nav-logout-btn-mobile {
-    margin-top: 8px;
+    /* margin-top: 8px; */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3378,7 +3378,7 @@ body {
 #hero {
     position: relative;
     min-height: 420px;
-    margin-top: 72px;
+    /* margin-top: 72px; */
     padding: 96px 24px 64px;
     overflow: hidden;
 }
