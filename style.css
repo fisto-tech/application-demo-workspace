@@ -473,24 +473,47 @@ body {
     text-align: center;
 }
 
-.hero-login-btn {
+.hero-login-btn,
+.hero-manage-btn,
+.hero-logout-btn {
     position: absolute;
     top: 24px;
     right: 24px;
     z-index: 2;
     padding: 12px 22px;
-    background: var(--gradient-primary);
-    color: var(--white);
     border: none;
     border-radius: var(--radius-full);
     font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
     transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.hero-login-btn {
+    background: var(--gradient-primary);
+    color: var(--white);
     box-shadow: var(--shadow-primary);
 }
 
-.hero-login-btn:hover {
+.hero-manage-btn,
+.hero-logout-btn {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-xs);
+}
+
+.hero-manage-btn {
+    right: 140px;
+}
+
+.hero-logout-btn {
+    right: 24px;
+    color: var(--danger);
+}
+
+.hero-login-btn:hover,
+.hero-logout-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 16px 40px rgba(181, 101, 29, 0.28);
 }

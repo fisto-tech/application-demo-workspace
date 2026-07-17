@@ -216,29 +216,40 @@ function toggleMasterPasswordVisibility() {
   toggle.setAttribute('aria-label', visible ? 'Hide master password' : 'Show master password');
   toggle.title = visible ? 'Hide password' : 'Show password';
 }
+function updateAuthButtons(isLoggedIn) {
+  const desktopLoginBtn = document.getElementById('loginBtn');
+  const heroLoginBtn = document.getElementById('heroLoginBtn');
+  const heroManageBtn = document.getElementById('heroManageBtn');
+  const heroLogoutBtn = document.getElementById('heroLogoutBtn');
+  const mobileLoginBtn = document.getElementById('loginBtnMobile');
+  const manageBtn = document.getElementById('manageProjectsBtn');
+  const mobileManageBtn = document.getElementById('manageProjectsBtnMobile');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const mobileLogoutBtn = document.getElementById('logoutBtnMobile');
+
+  if (desktopLoginBtn) desktopLoginBtn.style.display = isLoggedIn ? 'none' : 'inline-flex';
+  if (heroLoginBtn) heroLoginBtn.style.display = isLoggedIn ? 'none' : 'inline-flex';
+  if (heroManageBtn) heroManageBtn.style.display = isLoggedIn ? 'inline-flex' : 'none';
+  if (heroLogoutBtn) heroLogoutBtn.style.display = isLoggedIn ? 'inline-flex' : 'none';
+  if (mobileLoginBtn) mobileLoginBtn.style.display = isLoggedIn ? 'none' : 'flex';
+  if (manageBtn) manageBtn.style.display = isLoggedIn ? 'inline-flex' : 'none';
+  if (mobileManageBtn) mobileManageBtn.style.display = isLoggedIn ? 'flex' : 'none';
+  if (logoutBtn) logoutBtn.style.display = isLoggedIn ? 'inline-flex' : 'none';
+  if (mobileLogoutBtn) mobileLogoutBtn.style.display = isLoggedIn ? 'flex' : 'none';
+}
 function loginMaster() {
   const input = document.getElementById('masterPwInput');
   if (input.value !== MASTER_PASSWORD) { document.getElementById('pwError').textContent = 'Incorrect password. Try again.'; input.select(); return; }
   isMasterLoggedIn = true;
   sessionStorage.setItem('isMasterLoggedIn', 'true');
   closeMasterLoginModal();
-  document.getElementById('loginBtn').style.display = 'none';
-  document.getElementById('manageProjectsBtn').style.display = 'inline-flex';
-  document.getElementById('logoutBtn').style.display = 'inline-flex';
-  document.getElementById('loginBtnMobile').style.display = 'none';
-  document.getElementById('manageProjectsBtnMobile').style.display = 'flex';
-  document.getElementById('logoutBtnMobile').style.display = 'flex';
+  updateAuthButtons(true);
   openManageProjects();
 }
 function logoutMaster() {
   isMasterLoggedIn = false;
   sessionStorage.removeItem('isMasterLoggedIn');
-  document.getElementById('loginBtn').style.display = 'inline-flex';
-  document.getElementById('manageProjectsBtn').style.display = 'none';
-  document.getElementById('logoutBtn').style.display = 'none';
-  document.getElementById('loginBtnMobile').style.display = 'flex';
-  document.getElementById('manageProjectsBtnMobile').style.display = 'none';
-  document.getElementById('logoutBtnMobile').style.display = 'none';
+  updateAuthButtons(false);
   closeModal('manageProjectsModal');
 }
 function openManageProjects() { if (!isMasterLoggedIn) return openMasterLoginModal(); openModal('manageProjectsModal'); renderManageProjects(); }
@@ -553,12 +564,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (sessionStorage.getItem('isMasterLoggedIn') === 'true') {
     isMasterLoggedIn = true;
-    document.getElementById('loginBtn').style.display = 'none';
-    document.getElementById('manageProjectsBtn').style.display = 'inline-flex';
-    document.getElementById('logoutBtn').style.display = 'inline-flex';
-    document.getElementById('loginBtnMobile').style.display = 'none';
-    document.getElementById('manageProjectsBtnMobile').style.display = 'flex';
-    document.getElementById('logoutBtnMobile').style.display = 'flex';
+    updateAuthButtons(true);
+  } else {
+    updateAuthButtons(false);
   }
   
   renderAll();
