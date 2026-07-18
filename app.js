@@ -25,7 +25,7 @@ function isPreloaderEnabled() {
     if (navType === 'reload' || navType === 'back_forward') {
       return false;
     }
-    return localStorage.getItem(PRELOADER_KEY) !== 'true';
+    return sessionStorage.getItem(PRELOADER_KEY) !== 'true';
   } catch {
     return false;
   }
@@ -33,7 +33,7 @@ function isPreloaderEnabled() {
 
 function markPreloaderCompleted() {
   try {
-    localStorage.setItem(PRELOADER_KEY, 'true');
+    sessionStorage.setItem(PRELOADER_KEY, 'true');
   } catch {
     // ignore storage errors
   }
