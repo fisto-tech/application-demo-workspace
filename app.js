@@ -57,6 +57,9 @@ function startPageLoaderAnimation() {
   const loader = document.getElementById('fisto-preloader');
   if (!loader) return;
 
+  loader.style.display = 'flex';
+  loader.style.visibility = 'visible';
+  loader.style.opacity = '1';
   loader.classList.remove('is-exiting');
   document.body.classList.add('preloader-active');
   updatePreloaderProgress(0);
@@ -75,6 +78,7 @@ function startPageLoaderAnimation() {
     loader.classList.add('is-exiting');
     window.setTimeout(() => {
       loader.style.display = 'none';
+      loader.style.visibility = 'hidden';
       document.body.classList.remove('preloader-active');
     }, 700);
   };
@@ -115,6 +119,7 @@ function hidePageLoader() {
   const loader = document.getElementById('fisto-preloader');
   if (!loader) return;
   loader.style.display = 'none';
+  loader.style.visibility = 'hidden';
   loader.classList.remove('is-exiting');
   document.body.classList.remove('preloader-active');
 }
