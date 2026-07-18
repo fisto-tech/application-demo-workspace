@@ -2812,7 +2812,7 @@ body::after {
 }
 
 .hero-title {
-    font-size: clamp(3rem, 6vw, 5.2rem);
+    font-size: clamp(3rem, 6vw, 4.2rem);
     margin-bottom: 18px;
 }
 
@@ -3789,7 +3789,7 @@ footer .footer-brand {
 }
 
 .hero-title {
-    font-size: clamp(3rem, 6.6vw, 5rem);
+    font-size: clamp(3rem, 6.6vw, 4rem);
     line-height: 1;
     letter-spacing: -0.045em;
     text-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
