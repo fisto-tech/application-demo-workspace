@@ -25,22 +25,25 @@
 <body>
 
     <!-- PAGE LOADER -->
-    <div id="page-loader">
-        <div class="blob-loader">
-            <div class="blob-dot"></div>
-            <div class="blob-dot"></div>
-            <div class="blob-dot"></div>
+    <div id="fisto-preloader" class="fisto-preloader" role="status" aria-live="polite" aria-label="Loading">
+        <div class="preloader-shell">
+            <div class="preloader-visual" aria-hidden="true">
+                <div class="preloader-ring preloader-ring-outer"></div>
+                <div class="preloader-ring preloader-ring-middle"></div>
+                <div class="preloader-ring preloader-ring-inner"></div>
+                <div class="preloader-percent" id="preloaderPercent">00%</div>
+            </div>
+
+            <div class="preloader-brand">
+                <h2>Loading<span class="preloader-dots">...</span></h2>
+            </div>
+
+            <div class="preloader-bar-track" aria-hidden="true">
+                <div class="preloader-bar-fill" id="preloaderBarFill"></div>
+                <div class="preloader-bar-glow" id="preloaderBarGlow"></div>
+            </div>
         </div>
-        <p class="loader-brand">Loading <span>Fisto</span> Applications…</p>
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" style="display:none;">
-    <defs>
-      <filter id="liquid-glow">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-        <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 21 -9" result="gooey" />
-        <feBlend in="SourceGraphic" in2="gooey" />
-      </filter>
-    </defs>
-  </svg>
+        <span class="preloader-sr" id="preloaderStatusText">0% loaded</span>
     </div>
 
     <!-- CURSOR GLOW -->
@@ -143,7 +146,7 @@
                 Professional websites that help businesses attract premium customers
             </p>
             <button class="hero-cta" id="heroCta" onclick="document.getElementById('workspace').scrollIntoView({behavior:'smooth'})">
-                EXPLORE COLLECTION
+                EXPLORE DEMOS
             </button>
         </div>
     </section>

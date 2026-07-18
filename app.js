@@ -34,9 +34,84 @@ function markPreloaderCompleted() {
   }
 }
 
+function updatePreloaderProgress(progress) {
+  const percentEl = document.getElementById('preloaderPercent');
+  const barFill = document.getElementById('preloaderBarFill');
+  const barGlow = document.getElementById('preloaderBarGlow');
+  const statusText = document.getElementById('preloaderStatusText');
+  if (!percentEl || !barFill || !barGlow) return;
+  const clamped = Math.max(0, Math.min(100, Math.floor(progress)));
+  const padded = String(clamped).padStart(2, '0');
+  percentEl.textContent = `${padded}%`;
+  if (statusText) statusText.textContent = `${clamped}% loaded`;
+  barFill.style.width = `${clamped}%`;
+  barGlow.style.left = `calc(${clamped}% - 8px)`;
+}
+
+function startPageLoaderAnimation() {
+  const loader = document.getElementById('fisto-preloader');
+  if (!loader) return;
+
+  loader.classList.remove('is-exiting');
+  document.body.classList.add('preloader-active');
+  updatePreloaderProgress(0);
+
+  let progress = 0;
+  let completed = false;
+  let hasLoaded = false;
+  let hasReachedMinimum = false;
+
+  const finishLoader = () => {
+    if (completed) return;
+    completed = true;
+    clearInterval(timer);
+    clearTimeout(minimumTimer);
+    updatePreloaderProgress(100);
+    loader.classList.add('is-exiting');
+    window.setTimeout(() => {
+      loader.style.display = 'none';
+      document.body.classList.remove('preloader-active');
+    }, 700);
+  };
+
+  const finalizeIfReady = () => {
+    if (hasLoaded && hasReachedMinimum) {
+      finishLoader();
+    }
+  };
+
+  const timer = window.setInterval(() => {
+    const increment = progress > 80 ? Math.random() * 2 : Math.random() * 14;
+    progress = Math.min(progress + increment, 100);
+    updatePreloaderProgress(progress);
+
+    if (progress >= 100) {
+      finishLoader();
+    }
+  }, 100);
+
+  const minimumTimer = window.setTimeout(() => {
+    hasReachedMinimum = true;
+    finalizeIfReady();
+  }, 1400);
+
+  if (document.readyState === 'complete') {
+    hasLoaded = true;
+    finalizeIfReady();
+  } else {
+    window.addEventListener('load', () => {
+      hasLoaded = true;
+      finalizeIfReady();
+    }, { once: true });
+  }
+}
+
 function hidePageLoader() {
-  const loader = document.getElementById('page-loader');
-  if (loader) loader.classList.add('hidden');
+  const loader = document.getElementById('fisto-preloader');
+  if (!loader) return;
+  loader.style.display = 'none';
+  loader.classList.remove('is-exiting');
+  document.body.classList.remove('preloader-active');
 }
 
 const defaultCards = () => [
@@ -559,11 +634,53 @@ function setupCardAnimations() {
     });
 }
 
+function setupWorkspacePinning() {
+  if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.getElementById('workspace');
+  if (!section) return;
+
+  // Pin the workspace section for exactly one viewport height, then release.
+  // Use pinSpacing:true so the rest of the document layout behaves normally while pinned.
+  let pinInstance = null;
+  const createPin = () => {
+    if (pinInstance) {
+      try { pinInstance.kill(); } catch (e) {}
+      pinInstance = null;
+    }
+
+      // Pin for a short "one little scroll" distance (approx one wheel tick)
+      const pinDistance = 400; // px — adjust if you want a shorter/longer pin
+      pinInstance = ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: `+=${pinDistance}`,
+        pin: true,
+        pinSpacing: true,
+        scrub: false
+      });
+  };
+
+  createPin();
+
+  // Recreate on resize so the pin distance matches the current viewport
+  const onResize = () => {
+    // throttle with requestAnimationFrame
+    if (onResize._ticking) return;
+    onResize._ticking = true;
+    requestAnimationFrame(() => {
+      createPin();
+      ScrollTrigger.refresh();
+      onResize._ticking = false;
+    });
+  };
+  window.addEventListener('resize', onResize);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  startPageLoaderAnimation();
   const preloaderFirstRun = isPreloaderEnabled();
-  if (!preloaderFirstRun) {
-    hidePageLoader();
-  }
 
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.setAttribute('data-lenis-prevent', '');
@@ -579,7 +696,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (preloaderFirstRun) {
     await new Promise(resolve => {
       if (document.readyState === 'complete') return resolve();
-      window.addEventListener('load', resolve);
+      window.addEventListener('load', resolve, { once: true });
     });
   }
 
@@ -607,9 +724,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderAll();
   setupHeroAnimations();
   setupCardAnimations();
+  setupWorkspacePinning();
 
   if (preloaderFirstRun) {
     markPreloaderCompleted();
   }
-  hidePageLoader();
 });
