@@ -20,9 +20,14 @@ const PRELOADER_KEY = 'fistoPreloaderShown';
 
 function isPreloaderEnabled() {
   try {
+    const navEntries = performance.getEntriesByType('navigation');
+    const navType = navEntries?.[0]?.type || (performance.navigation ? performance.navigation.type : 'navigate');
+    if (navType === 'reload' || navType === 'back_forward') {
+      return false;
+    }
     return localStorage.getItem(PRELOADER_KEY) !== 'true';
   } catch {
-    return true;
+    return false;
   }
 }
 
@@ -679,8 +684,10 @@ function setupWorkspacePinning() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  startPageLoaderAnimation();
   const preloaderFirstRun = isPreloaderEnabled();
+  if (preloaderFirstRun) {
+    startPageLoaderAnimation();
+  }
 
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.setAttribute('data-lenis-prevent', '');
@@ -728,5 +735,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (preloaderFirstRun) {
     markPreloaderCompleted();
+  } else {
+    hidePageLoader();
   }
 });
