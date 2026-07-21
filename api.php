@@ -45,7 +45,7 @@ function requestData(): array {
 
 function requireMasterAccess(): void {
     $env = envValues(__DIR__ . '/.env');
-    $expected = $env['MasterPassword'] ?? 'fisto@2025';
+    $expected = $env['MasterPassword'] ?? 'fisto@2026';
     $provided = $_SERVER['HTTP_X_MASTER_KEY'] ?? '';
     if (!hash_equals($expected, $provided)) respond(false, null, 'Master access is required.', 401);
 }
@@ -129,7 +129,8 @@ try {
     if (in_array($method, ['POST', 'PUT', 'DELETE'], true)) requireMasterAccess();
 
     if ($resource === 'projects' && $method === 'GET') {
-        $rows = $db->query('SELECT p.*, c.name AS category_name FROM application_projects p JOIN application_categories c ON c.id = p.category_id ORDER BY p.created_at DESC, p.id DESC')->fetch_all(MYSQLI_ASSOC);
+        // We order by sort_order first, then created_at DESC
+        $rows = $db->query('SELECT p.*, c.name AS category_name FROM application_projects p JOIN application_categories c ON c.id = p.category_id ORDER BY p.sort_order ASC, p.created_at DESC, p.id DESC')->fetch_all(MYSQLI_ASSOC);
         foreach ($rows as &$row) $row['credentials'] = credentials($db, (int)$row['id']);
         respond(true, $rows);
     }
@@ -180,6 +181,21 @@ try {
     if (($id = idFromResource($resource, 'projects')) !== null && $method === 'DELETE') {
         $existing = project($db, $id);
         $stmt = $db->prepare('DELETE FROM application_projects WHERE id = ?'); $stmt->bind_param('i', $id); $stmt->execute(); if ($stmt->affected_rows === 0) respond(false, null, 'Project not found.', 404); if (!empty($existing['image'])) deleteUploadedImage((string)$existing['image']); respond(true, null, 'Project deleted.');
+    }
+    if ($resource === 'projects/reorder' && $method === 'PUT') {
+        $order = $body['order'] ?? [];
+        if (!is_array($order)) respond(false, null, 'Invalid payload.', 422);
+        $db->begin_transaction();
+        // Update sort_order for each ID provided
+        $stmt = $db->prepare('UPDATE application_projects SET sort_order = ? WHERE id = ?');
+        foreach ($order as $index => $projectId) {
+            $sortVal = (int)$index;
+            $pId = (int)$projectId;
+            $stmt->bind_param('ii', $sortVal, $pId);
+            $stmt->execute();
+        }
+        $db->commit();
+        respond(true, null, 'Projects reordered.');
     }
     if ($resource === 'categories' && $method === 'GET') respond(true, categories($db));
     if ($resource === 'categories' && $method === 'POST') {

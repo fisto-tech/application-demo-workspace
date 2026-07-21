@@ -210,7 +210,7 @@ function renderCards() {
     document.getElementById('workspaceCount').textContent = `${filtered.length} of ${cards.length} application${cards.length === 1 ? '' : 's'}`;
     const grid = document.getElementById('cardsGrid');
     grid.innerHTML = filtered.length ? filtered.map((card, index) => `
-    <article class="app-card">
+    <article class="app-card" data-id="${escapeHtml(card.id)}">
       <div class="app-card-image image-skeleton">
         <img src="${escapeHtml(resolveAssetPath(card.image))}" alt="${escapeHtml(card.title)}" onload="this.parentElement.classList.remove('image-skeleton')" onerror="this.parentElement.classList.remove('image-skeleton'); this.src='fisto-logo.png'" loading="lazy" />
       </div>
@@ -333,6 +333,7 @@ function updateAuthButtons(isLoggedIn) {
   const mobileManageBtn = document.getElementById('manageProjectsBtnMobile');
   const logoutBtn = document.getElementById('logoutBtn');
   const mobileLogoutBtn = document.getElementById('logoutBtnMobile');
+  const rearrangeBtn = document.getElementById('rearrangeBtn');
 
   if (desktopLoginBtn) desktopLoginBtn.style.display = isLoggedIn ? 'none' : 'inline-flex';
   if (heroLoginBtn) heroLoginBtn.style.display = isLoggedIn ? 'none' : 'inline-flex';
@@ -343,6 +344,69 @@ function updateAuthButtons(isLoggedIn) {
   if (mobileManageBtn) mobileManageBtn.style.display = isLoggedIn ? 'flex' : 'none';
   if (logoutBtn) logoutBtn.style.display = isLoggedIn ? 'inline-flex' : 'none';
   if (mobileLogoutBtn) mobileLogoutBtn.style.display = isLoggedIn ? 'flex' : 'none';
+  
+  if (rearrangeBtn) {
+    if (isLoggedIn) {
+      rearrangeBtn.classList.add('is-admin');
+    } else {
+      rearrangeBtn.classList.remove('is-admin');
+      rearrangeBtn.classList.remove('active');
+    }
+  }
+}
+
+let isRearrangeActive = false;
+let sortableInstance = null;
+
+function toggleRearrangeMode() {
+  const btn = document.getElementById('rearrangeBtn');
+  const grid = document.getElementById('cardsGrid');
+  if (!btn || !grid) return;
+  
+  isRearrangeActive = !isRearrangeActive;
+  
+  if (isRearrangeActive) {
+    btn.classList.add('active');
+    grid.classList.add('is-rearranging');
+    
+    if (typeof Sortable !== 'undefined') {
+      sortableInstance = new Sortable(grid, {
+        animation: 350,
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        forceFallback: true,
+        fallbackClass: 'sortable-fallback',
+        fallbackOnBody: true,
+        easing: 'cubic-bezier(0.2, 0, 0, 1)',
+        onEnd: async function () {
+          if (!usingApi) return;
+          const order = Array.from(grid.children).map(c => c.dataset.id).filter(Boolean);
+          try {
+            await request('projects/reorder', {
+              method: 'PUT',
+              body: JSON.stringify({ order })
+            });
+            cards.sort((a, b) => {
+              const idxA = order.indexOf(String(a.id));
+              const idxB = order.indexOf(String(b.id));
+              return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+            });
+            showToast('Order saved.', 'success');
+          } catch (error) {
+            showToast('Failed to save order: ' + error.message, 'error');
+          }
+        }
+      });
+    }
+  } else {
+    btn.classList.remove('active');
+    grid.classList.remove('is-rearranging');
+    
+    if (sortableInstance) {
+      sortableInstance.destroy();
+      sortableInstance = null;
+    }
+  }
 }
 function loginMaster() {
   const input = document.getElementById('masterPwInput');
